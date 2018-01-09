@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Drawing;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace Mandelbrot
@@ -16,11 +10,12 @@ namespace Mandelbrot
         {
             InitializeComponent();
             Start();
+
         }
 
         public static int Map(int value, int fromSource, int toSource, int fromTarget, int toTarget)
         {
-           var  val = ((double)value - fromSource) / ((double)toSource - fromSource) * ((double)toTarget - fromTarget) + (double)fromTarget;
+            double val = (double)(value - fromSource) / (toSource - fromSource) * (toTarget - fromTarget) + fromTarget;
 
             return (int)val;
         }
@@ -31,16 +26,13 @@ namespace Mandelbrot
             return val;
         }
 
-
-        private void Start()
+        Bitmap bmp;
+        private void Start(int maxIterations = 100)
         {
-            Bitmap bmp = new Bitmap(panel1.Width, panel1.Height);
+            if (panel1.BackgroundImage != null)
+                panel1.BackgroundImage.Dispose();
+            bmp = new Bitmap(panel1.Width, panel1.Height);
             panel1.BackgroundImage = bmp;
-
-            double w = 50;
-            double h = (w * panel1.Height) / panel1.Width;
-
-            int maxiterations = 100;
 
 
             for (int j = 0; j < panel1.Height; j++)
@@ -54,7 +46,7 @@ namespace Mandelbrot
                     var cb = b;
 
                     var n = 0;
-                    while (n < maxiterations)
+                    while (n < maxIterations)
                     {
                         var aa = a * a - b * b;
                         var bb = 2 * a * b;
@@ -67,18 +59,32 @@ namespace Mandelbrot
                         n++;
                     }
 
-                    if (n == maxiterations)
+                    if (n == maxIterations)
                         bmp.SetPixel(i, j, Color.Black);
                     else
                     {
-                      
-                        Color col = Color.FromArgb(Map(n, 0, maxiterations, 0, 255),10,10);
+
+                        Color col = Color.FromArgb(Map(n, 0, maxIterations, 0, 255), 10, 10);
                         bmp.SetPixel(i, j, col);
-                        
+
                     }
                 }
             }
 
+        }
+
+        private void trackBar1_Scroll(object sender, System.EventArgs e)
+        {
+            Start(trackBar1.Value);
+        }
+
+        private void toolStripButton1_Click(object sender, System.EventArgs e)
+        {
+            for (int i = 0; i < 100; i++)
+            {
+                Start(i);
+                this.Update();
+            }
         }
     }
 }
